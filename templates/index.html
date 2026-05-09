@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulador Ecuaciones Diferenciales - Universidad de La Guajira</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+  <div class="mx-auto max-w-6xl px-4 py-8">
+    <header class="mb-8 rounded-3xl bg-slate-900/80 p-6 shadow-2xl shadow-slate-950/40 backdrop-blur-lg">
+      <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 class="text-3xl font-semibold text-cyan-300">Simulador de Ecuaciones Diferenciales</h1>
+          <p class="mt-2 max-w-2xl text-slate-300">Taller de Ecuaciones Diferenciales de la Universidad de La Guajira. Resuelve y simula Newton, población y mezclas.</p>
+        </div>
+        <button id="darkToggle" class="rounded-full bg-cyan-500 px-4 py-2 text-slate-950 transition hover:bg-cyan-400">Modo oscuro</button>
+      </div>
+    </header>
+
+    <div class="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+      <section class="space-y-6">
+        <div class="rounded-3xl bg-slate-900/80 p-6 shadow-2xl shadow-slate-950/40 backdrop-blur-lg">
+          <div class="tabs flex flex-wrap gap-3" role="tablist">
+            <button class="tab-button rounded-2xl bg-cyan-600 px-4 py-2 font-semibold text-slate-950" data-tab="enfriamiento">Newton</button>
+            <button class="tab-button rounded-2xl bg-slate-800 px-4 py-2 font-semibold text-slate-100" data-tab="poblacion">Población</button>
+            <button class="tab-button rounded-2xl bg-slate-800 px-4 py-2 font-semibold text-slate-100" data-tab="mezclas">Mezclas</button>
+          </div>
+
+          <div class="mt-6 space-y-6">
+            <form id="enfriamientoForm" class="tab-content block space-y-4 rounded-3xl bg-slate-950/80 p-5 shadow-inner shadow-slate-900/30">
+              <h2 class="text-xl font-semibold text-cyan-300">Ley de Enfriamiento de Newton</h2>
+              <p class="text-slate-400">Modelo: <strong>T(t) = T_a + (T_0 - T_a) e^{-k t}</strong></p>
+              <div class="grid gap-4 sm:grid-cols-2">
+                <label class="space-y-1 text-sm text-slate-300">
+                  Temperatura ambiente (°C)
+                  <input type="number" step="any" name="t_amb" required class="input-field" placeholder="Ej. 25" />
+                </label>
+                <label class="space-y-1 text-sm text-slate-300">
+                  Temperatura inicial (°C)
+                  <input type="number" step="any" name="t0" required class="input-field" placeholder="Ej. 90" />
+                </label>
+                <label class="space-y-1 text-sm text-slate-300">
+                  Constante de enfriamiento k
+                  <input type="number" step="any" name="k" required min="0" class="input-field" placeholder="Ej. 0.08" />
+                </label>
+                <label class="space-y-1 text-sm text-slate-300">
+                  Tiempo máximo (min)
+                  <input type="number" step="any" name="t_max" required min="0" class="input-field" placeholder="Ej. 60" />
+                </label>
+              </div>
+              <button type="submit" class="btn-primary">Simular Newton</button>
+            </form>
+
+            <form id="poblacionForm" class="tab-content hidden space-y-4 rounded-3xl bg-slate-950/80 p-5 shadow-inner shadow-slate-900/30">
+              <h2 class="text-xl font-semibold text-cyan-300">Crecimiento y Decaimiento Poblacional</h2>
+              <p class="text-slate-400">Modelo: <strong>P(t) = P_0 e^{k t}</strong></p>
+              <div class="grid gap-4 sm:grid-cols-2">
+                <label class="space-y-1 text-sm text-slate-300">
+                  Población inicial
+                  <input type="number" step="any" name="p0" required min="0" class="input-field" placeholder="Ej. 1200" />
+                </label>
+                <label class="space-y-1 text-sm text-slate-300">
+                  Tasa neta k
+                  <input type="number" step="any" name="k" required class="input-field" placeholder="Ej. 0.02" />
+                </label>
+                <label class="space-y-1 text-sm text-slate-300">
+                  Tiempo máximo (años)
+                  <input type="number" step="any" name="t_max" required min="0" class="input-field" placeholder="Ej. 50" />
+                </label>
+              </div>
+              <button type="submit" class="btn-primary">Simular Población</button>
+            </form>
+
+            <form id="mezclasForm" class="tab-content hidden space-y-4 rounded-3xl bg-slate-950/80 p-5 shadow-inner shadow-slate-900/30">
+              <h2 class="text-xl font-semibold text-cyan-300">Mezclas y Dilución (Tanques)</h2>
+              <p class="text-slate-400">Modelo: <strong>A(t) = A_0 e^{-k t} + V c_{in} (1 - e^{-k t})</strong></p>
+              <div class="grid gap-4 sm:grid-cols-2">
+                <label class="space-y-1 text-sm text-slate-300">
+                  Volumen del tanque (L)
+                  <input type="number" step="any" name="v" required min="0" class="input-field" placeholder="Ej. 1000" />
+                </label>
+                <label class="space-y-1 text-sm text-slate-300">
+                  Soluto inicial A0
+                  <input type="number" step="any" name="a0" required class="input-field" placeholder="Ej. 200" />
+                </label>
+                <label class="space-y-1 text-sm text-slate-300">
+                  Concentración entrante c_in
+                  <input type="number" step="any" name="r_in" required class="input-field" placeholder="Ej. 0.5" />
+                </label>
+                <label class="space-y-1 text-sm text-slate-300">
+                  Tasa de salida (L/min)
+                  <input type="number" step="any" name="r_out" required min="0" class="input-field" placeholder="Ej. 10" />
+                </label>
+                <label class="space-y-1 text-sm text-slate-300 sm:col-span-2">
+                  Tiempo máximo (min)
+                  <input type="number" step="any" name="t_max" required min="0" class="input-field" placeholder="Ej. 120" />
+                </label>
+              </div>
+              <button type="submit" class="btn-primary">Simular Mezclas</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="rounded-3xl bg-slate-900/80 p-6 shadow-2xl shadow-slate-950/40 backdrop-blur-lg">
+          <h2 class="text-2xl font-semibold text-cyan-300">Fundamentación Matemática</h2>
+          <div class="space-y-5 pt-4 text-slate-300">
+            <div>
+              <h3 class="text-lg font-semibold text-slate-100">Newton</h3>
+              <p>La ecuación diferencial se presenta como:</p>
+              <p class="math">\( \frac{dT}{dt} = -k \left(T - T_a\right) \)</p>
+              <p>La solución analítica es:</p>
+              <p class="math">\( T(t) = T_a + (T_0 - T_a) e^{-k t} \)</p>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold text-slate-100">Población</h3>
+              <p>El crecimiento exponencial se modela como:</p>
+              <p class="math">\( \frac{dP}{dt} = k P \)</p>
+              <p>La solución es:</p>
+              <p class="math">\( P(t) = P_0 e^{k t} \)</p>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold text-slate-100">Mezclas</h3>
+              <p>En un tanque perfectamente mezclado:</p>
+              <p class="math">\( \frac{dA}{dt} = Q_{in} c_{in} - \frac{Q_{out}}{V} A \)</p>
+              <p>Para flujo constante, la solución se expresa como:</p>
+              <p class="math">\( A(t) = A_0 e^{-k t} + V c_{in} \left(1 - e^{-k t}\right) \)</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="space-y-6">
+        <div class="rounded-3xl bg-slate-900/80 p-6 shadow-2xl shadow-slate-950/40 backdrop-blur-lg">
+          <h2 class="text-2xl font-semibold text-cyan-300">Vista de la simulación</h2>
+          <p class="mt-2 text-slate-400">La gráfica muestra la evolución temporal del modelo seleccionado. Haz click en cada pestaña para cambiar el escenario.</p>
+          <div class="mt-6 rounded-3xl bg-slate-950/90 p-4 shadow-inner shadow-slate-900/40">
+            <canvas id="chartCanvas" class="w-full h-80"></canvas>
+          </div>
+          <div id="mensajeError" class="mt-4 hidden rounded-2xl border border-rose-500/50 bg-rose-500/10 p-4 text-rose-200"></div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script src="/static/js/simulator.js"></script>
+</body>
+</html>
